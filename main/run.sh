@@ -5,7 +5,7 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-16
-# Date Modified: 2014-9-13
+# Date Modified: 2014-9-15
 
 echo "Setting up scripts"
 
@@ -14,6 +14,13 @@ Override="Override"
 
 # Establish Dreamcast User Name
 DCuser="dream"
+
+# Check for an 'Override' of 'Login' for User
+overUser=$(grep "Login" $Override | grep -v \# | awk '{print $2}')
+
+if [[ ! -z $overUser ]]; then
+	DCuser=$overUser
+fi
 
 echo "Checking for necessary software"
 
@@ -45,40 +52,39 @@ fi
 # we update repositories
 if [[ -z $checkPPP ]] || [[ -z $checkWVDial ]] ||
 	[[ -z $checkApache ]] || [[ -z $checkDNS ]]; then
-	echo Preparing to Download Software
-	echo Updating Repositories
+	echo "Preparing to Download Software"
+	echo "Updating Repositories"
 	sudo apt-get update
 fi
 
 # Install ppp if it's not already
 if [[ -z $checkPPP ]]; then
-	echo Installing PPP
+	echo "Installing PPP"
 	sudo apt-get install ppp
 fi
 
 # Install wvdial if it's not already
 if [[ -z $checkWVDial ]]; then
-	echo Installing WVDial
+	echo "Installing WVDial"
 	sudo apt-get install wvdial
 fi
 
 # Install apache2 if it's not already
 if [[ -z $checkApache ]]; then
-	echo Installing Apache
+	echo "Installing Apache"
 	sudo apt-get install apache2
 fi
 
 # Install dnsmasq if it's not already
 if [[ -z $checkDNS ]]; then
-	echo Installing dnsmasq
+	echo "Installing dnsmasq"
 	sudo apt-get install dnsmasq
 fi
 
 echo "Checking for Modem"
 
 # Check Overrride file for "Modem"
-overModem=$(grep "Modem" $Override | grep -v \# |
-	cut -d ":" -f 2 | cut -d " " -f 2)
+overModem=$(grep "Modem" $Override | grep -v \# | awk '{print $2}')
 
 # No Override Specified for Dreamcast IP Address
 if [[ -z $overModem ]]; then
@@ -100,39 +106,38 @@ fi
 
 # Check that a modem was found.
 if [[ -z $MODEM ]]; then
-	echo Error: No Modem Detected.
+	echo "Error: No Modem Detected."
 	exit
 else
-	echo Found Modem: $MODEM
+	echo "Found Modem: $MODEM"
 fi
 
-echo "Saving Settings Files"
-# Run the script to check for the necessary hardware
-# detect the network settings and create settings files
-exec sudo ./modem-settings.sh $Override $MODEM $DCuser &
+# Check if the setting turned off writing files
+overFile=$(grep "No Files" $Override | grep -v \#)
 
-# Wait for the settings to finish executing
-wait
+# If we are writing files
+if [[ -z $overFile ]]; then
+	echo "Saving Settings Files"
+
+	# Run the script to check for the necessary hardware
+	# detect the network settings and create settings files
+	exec sudo ./modem-settings.sh $Override $MODEM $DCuser &
+
+	# Wait for the settings to finish executing
+	wait $!
+else
+	# Not writing files
+	echo "'No Files' found in Override. Skipping writing settings."
+fi
 
 # If we set up the settings successfuly,
 # then start the listener
 if [[ $? == 0 ]]; then
 	echo "Starting Listener"
 	exec sudo ./modem-listener.sh $Override $MODEM $DCuser &
-	wait
+	wait $!
 	echo "Program complete."
 fi
 
-
-
-#echo "Updating Settings:"
-##setup=$(exec sudo ./modem-settings.sh) &
-#grabStuff=""
-#exec 4>&1
-#grabStuff=$(exec sudo ./modem-settings.sh | tee /dev/fd/4)
-#wait
-#echo "$grabStuff" | grep "Found Modem:"
-#echo "Settings up to date. Running listener:"
-##exec sudo ./modem-listener.sh &
-#wait
-#echo "Program complete."
+# If we skip the "modem-listener.sh", we should get an error statement
+# printed out to the user from the "modem-settings.sh" script.
