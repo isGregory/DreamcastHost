@@ -1,30 +1,72 @@
-# This is a file that allows users to specify override
-# commands and settings for the preference script.
-
-#NOT IMPLEMENTED
-# Override Writing/Refreshing Settings Files
-# When this program runs it will scan through settings
-# and then update the settings file. This takes about
-# a minute or two to do. If one feels settings aren't
-# changing often, or perhaps edits have been made to
-# those settings, the writing out of those files
-# can be turned off.
+# Override file
+# Author: Gregory Hoople
 #
-# Usage:
-# No Files
-
-# Override Output Settings
-# This program will filter out certain things to
-# keep the output cleaner. Here you can specify
-# printing out stuff that is otherwise filtered
 #
-# Usage:
-# Show All
+# This is a file that allows users to specify override commands and settings
+# for the 'run.sh' script and the scripts it uses.
+#
+# Note: The order of these settings does not matter. Feel free to move
+# settings around as you feel most convenient.
+
+
+# Override Dreamcast Login
+# Here you can specify the user account the Dreamcast needs to log into, and
+# the password it needs to use. This can be useful if you want multiple
+# Dreamcasts connected to the same computer, or use an account that's already
+# set up.
+#
+# Default user is "dream"
+# Default password is "dreamcast"
+#
+# Example:
+# Login:	dream2		password2
+
+
+
+# Override Modem Device Name
+# Here you can place the name of the modem you want to use rather than have
+# the program detect the modem.
+#
+# Example:
+# Modem: ttyACM0
+Modem:
+
+
+
+# Override Dreamcast IP
+# Here you can specify an IP address you want the Dreamcast to use.
+#
+# Example:
+# Dreamcast IP: 192.168.1.53
+Dreamcast IP:
+
+
+
+# Override MS-DNS
+# Here you can specify the DNS server address you want the Dreamcast to
+# connect to.
+#
+# The program will attempt to install software that uses itself as the
+# DNS server and then connects out from there to the DNS server the DC-PC
+# server is using.
+#
+# Note: Entries can be either an IP address or Domain
+#
+# Examples:
+# Local Router
+# Set DNS: 192.168.1.1
+#
+# Dreamcast-Talk (Example; this won't actually work)
+# Set DNS: dctalk.no-ip.info
+#
+# Sylverant PSO Server
+# Set DNS: 67.222.144.120
+
+
 
 # Override Webserver Installation
-# Here you can place a setting to prevent the script
-# from installing certain software that sets up the
-# webserver.
+# Here you can place a setting to prevent the script from installing certain
+# software that sets up the webserver.
 #
 # Apache	- Will not install the apache web server
 # dnsmasq	- Will not install the "dnsmasq" program
@@ -34,45 +76,36 @@
 # Usage:
 # Webserver Off
 
-# Override Modem Device Name
-# Here you can place the name of the modem you want to
-# use rather than have the program detect the modem.
-#
-# Example:
-# Modem: ttyACM0
-Modem:
 
-# Override Dreamcast IP
-# Here you can specify an IP address you want the
-# Dreamcast to use.
-#
-# Example:
-# Dreamcast IP: 192.168.1.53
-Dreamcast IP:
 
-# Override MS-DNS
-# Here you can specify the DNS server address
-# you want the Dreamcast to connect to.
+# Override Writing/Refreshing Settings Files
+# When this program runs it will scan through settings and then update the
+# settings file. This takes about a minute or two to do. If one feels settings
+# aren't changing often, or perhaps edits have been made to those settings,
+# the writing out of those files can be turned off.
 #
-# The program will attempt to install software
-# that uses itself as the DNS server and then
-# connects out from there to the DNS server
-# the DC-PC server is using.
-#
-# Note: You can list multiple overrides here and
-# comment out ones you aren't using
-#
-# Example:
-# Local Router
-# Set DNS: 192.168.1.1
-#
-# Sylverant PSO Server
-# Set DNS: 67.222.144.120
-#Set DNS: 67.222.144.120
+# Usage:
+# No Files
 
-# Here you can specify the Domains you want
-# the apache server and dnsmasq to redirect
-# to private HTML files.
+
+
+# Override Output Settings
+# This program will filter out certain things to keep the output cleaner.
+# Here you can specify printing out stuff that is otherwise filtered.
+# Note: Currently doesn't make much of a difference.
+#
+# Usage:
+# Show All
+
+
+
+################### NOTE: The following settings depend #####################
+################### on apache and dnsmasq running       #####################
+
+
+# Add Domains
+# Here you can specify the Domains you want the apache server and dnsmasq to
+# redirect to private HTML files.
 #
 # Example:
 # Domain: www.sega.com
@@ -89,57 +122,53 @@ Domain: www.test.com
 Domain: shenmue.com
 Domain: passport.shenmue.com
 
-# Here you can specify the IP address
-# for all websites if you want to direct
+
+
+# Set Website Host
+# Here you can specify the IP address for all websites if you want to direct
 # to a different host than the local one.
 #
 # Example:
 # Host: 192.168.1.13
 
-# NOT IMPLEMENTED
-# Here you can specify the IP address
-# or the domain you want a Group to
+
+
+# Set Groups
+# Here you can specify the IP address or the domain you want a Group to
 # redirect to.
 #
 # Example:
 # Group:	GamePSO		192.168.1.13
+Group:		GamePSO		192.168.1.29
 
-# Here you can specify the Domains you want
-# dnsmasq to redirect to and corresponding
-# destination you want them to go to
+
+
+# Set Server Redirect
+# Here you can specify the Domains you want dnsmasq to redirect to and
+# corresponding destination you want them to go to
 #
-# Destionations can be either an IP address
-# Domain, or Group as specified below.
+# Destionations can be either an IP address Domain, or Group as
+# specified below.
 #
-# IP Address -	The domain will be directed to
-# the specified IP address.
+# IP Address -	The domain will be directed to the specified IP address.
 # Example:
 # Redirect:	www.sega.com	192.168.1.1
 #
-# NOT IMPLEMENTED
-# Domain -	The domain will be directed to
-# the specified domain by looking up the target
-# domain's IP address.
+# Domain -	The domain will be directed to the specified domain by
+# looking up the target domain's IP address.
 # Example:
-# Redirect:	www.sega.com	dc-talk.info.net
+# Redirect:	www.sega.com	www.google.com
 #
-# NOT IMPLEMENTED
-# Group -	The domain will be directed to
-# the IP address of the Group that's specified.
-# This is useful should a single game use many
-# servers, using a group allows all these servers
-# to point to a single location. Thus if the
-# server changes only a single location in this
-# file needs to change.
+# Group -	The domain will be directed to the IP address of the Group
+# that's specified. This is useful should a single game use many servers,
+# using a group allows all these servers to point to a single location.
+# Thus if the server changes, only a single location in this file needs to
+# be updated.
 # Example:
 # Redirect:	pso.dream-key.com	GamePSO
 #
-# Note: This will not be able to consistantly
-# differentiate between a sub domain and base
-# domain. So be cautious.
-#
-# Example:
-# Redirect:	pso.dreamcast.com	192.158.bs.29
+# Note: Be aware issues may arrise if Redirect and Domain have the same sites
+# and differ only with sub domains.
 #
 # Phantasy Star Online Uses:
 # Redirect:	game01.st-pso.games.sega.net
@@ -159,12 +188,7 @@ Domain: passport.shenmue.com
 # Quake 3 Arena Uses:
 # Redirect:	master.quake3arena.com
 
-Redirect:	game01.st-pso.games.sega.net	192.168.1.9
-Redirect:	pso01.dricas.ne.jp		192.168.1.9
-Redirect:	master.pso.dream-key.com	192.168.1.9
-Redirect:	pso.dream-key.com		192.168.1.9
-
-#Redirect:	game01.st-pso.games.sega.net	GamePSO
-#Redirect:	pso01.dricas.ne.jp		GamePSO
-#Redirect:	master.pso.dream-key.com	GamePSO
-#Redirect:	pso.dream-key.com		GamePSO
+Redirect:	game01.st-pso.games.sega.net	GamePSO
+Redirect:	pso01.dricas.ne.jp		GamePSO
+Redirect:	master.pso.dream-key.com	GamePSO
+Redirect:	pso.dream-key.com		GamePSO
