@@ -19,10 +19,13 @@
 # References:
 # www.dreamcast-scene.com/guides/pc-dc-server-guide-win7
 # www.ryochan7.com/blog/2009/06/23/pc-dc-server-guide-part-0-introduction
+#
 # na2's comments on:
 # www.dreamcast-talk.com/forum/viewtopic.php?f=3&t=1160&start=40
+#
 # Corona688's comments on:
 # www.unix.com/linux/153781-how-do-i-capture-responses-chat-command.html
+#
 # IP Check Information/Examples:
 # www.unix.com/shell-programing-and-scripting/36005-regular-expression-mac-address-validation.html
 
