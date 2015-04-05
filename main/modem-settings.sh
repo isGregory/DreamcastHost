@@ -1,5 +1,7 @@
 #!/bin/bash
-# Detect connected modem and establish settings
+# Detect connected modem and establish settings to allow
+# for a client to dial in and receive internet from host
+# computer.
 #
 # Usage:
 # modem-settings.sh $Override $Modem $DCuser
@@ -12,7 +14,7 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-6
-# Date Modified: 2014-9-15
+# Date Modified: 2015-3-29
 #
 # References:
 # www.dreamcast-scene.com/guides/pc-dc-server-guide-win7
@@ -21,7 +23,8 @@
 # www.dreamcast-talk.com/forum/viewtopic.php?f=3&t=1160&start=40
 # Corona688's comments on:
 # www.unix.com/linux/153781-how-do-i-capture-responses-chat-command.html
-
+# IP Check Information/Examples:
+# www.unix.com/shell-programing-and-scripting/36005-regular-expression-mac-address-validation.html
 
 # Helper Functions:
 # Fuction to check that an IP address is valid.
@@ -32,7 +35,13 @@ checkIP() {
 # Use nslookup to check the IP address of the entered domain
 lookupDomain() {
 	toCheck=$*
-	searchIP=$(nslookup $toCheck)
+
+	# Look up the IP address of the domain
+	# Send '2' to /dev/null to prevent an arrow being
+	# printed out every time this function is called
+	searchIP=$(nslookup $toCheck 2>/dev/null)
+
+	# Strip the information to just the IP address
 	echo "$searchIP" | grep -A 1 "$toCheck" | grep -m 1 "Address" |
 		awk '{print $2}'
 }
@@ -40,7 +49,7 @@ lookupDomain() {
 
 # Set default variables
 # Override File
-Override="Override"
+Override="Override.txt"
 
 # Modem device to connect to
 MODEM="/dev/ttyACM0"
@@ -48,7 +57,7 @@ MODEM="/dev/ttyACM0"
 # User to log in as
 DCuser="dream"
 
-echo "Recieved: $1 | $2 | $3"
+echo "Settings Recieved: $1 | $2 | $3"
 
 # Check if arguments have been passed in
 # Check for first argument (Override)
@@ -102,7 +111,7 @@ if [[ -z $myLANip ]]; then
 	echo "Error: No Internet Detected."
 	exit 1
 else
-	echo "Found my local IP Address: $myLANip"
+	echo "Local IP Address: $myLANip"
 fi
 
 ipGroup=${myLANip%.*}
@@ -128,17 +137,17 @@ if [[ -z $overDCIP ]]; then
 		if [[ $ipCheck == $myLANip ]]; then
 			continue
 		fi
-		echo "Checking $ipCheck..."
+		echo -n "Checking $ipCheck..."
 		checkAddress=$(ping -c 1 $ipCheck)
 		if [[ $checkAddress == *"0 received"* ]]; then
-			echo "Found open IP Address for Dreamcast!"
+			echo "IP Address for Dreamcast found!"
 			ipDreamcast=$ipCheck
 			break
 		elif [[ -z $checkAddress ]]; then
 			echo "Error: No Network Detected."
 			break
 		else
-			echo "... IP Address in use."
+			echo "IP Address in use."
 		fi
 	done
 
@@ -161,10 +170,10 @@ if [[ -z $netmask ]]; then
 	echo "Error: Could not find internet netmask."
 	exit 1
 else
-	echo "Netmask is: $netmask"
+	echo "Netmask: $netmask"
 fi
 
-# Check Overrride file for "Dreamcast IP"
+# Check Overrride file for "Set DNS"
 overDNS=$(grep "Set DNS" $Override | grep -v \# | awk '{print $3}')
 
 # Check that the group listed a valid IP
@@ -175,14 +184,17 @@ if [[ -z $cIP ]]; then
 	overDNS=$(lookupDomain $overDNS)
 fi
 
-
 # No Override Specified for Dreamcast IP Address
 if [[ ! -z $overDNS ]]; then
 	echo "Override for DNS Gateway Found: $overDNS"
 	gateway=$overDNS
-elif [[ -z $overDNSmasq ]]; then
+elif [[ -z $overWeb ]]; then
+	# We redirect the DNS to the local DC-PC server.
+	# This will use dnsmasq to handle requests.
 	gateway=$myLANip
 else
+	# Look up and use the DNS that the local
+	# machine is using.
 	gateway=$(route -n | grep -w UG | awk '{print $2}' | cut -d " " -f 2)
 fi
 
@@ -190,7 +202,47 @@ if [[ -z $gateway ]]; then
 	echo "Error: Could not find internet gateway (router)."
 	exit 1
 else
-	echo "Gateway is: $gateway"
+	echo "Gateway: $gateway"
+fi
+
+
+# Check Overrride file for "Raspberry Pi"
+overPi=$(grep "Raspberry Pi" $Override | grep -v \#)
+
+# In the case that the system is running on a Raspberry Pi
+# using wifi, a setting needs to change so that starting up
+# ppp will not turn off the wifi connection. Without this,
+# the dreamcast will be able to connect to local addresses
+# but will not be able to load external websites or games.
+#
+# This suggestion was found at:
+# http://www.raspberrypi.org/forums/viewtopic.php?f=29&t=39409
+# Further information
+# http://www.raspberrypi.org/forums/viewtopic.php?f=91&t=19430
+if [[ -z $overPi ]]; then
+	echo "Making sure Raspberry Pi handles wifi"
+
+	wiDir="/etc/ifplugd/action.d/"
+	wiFile="action_wpa"
+
+	# If the file exists and hasn't been changed yet
+	if [ -f "$wiDir$wiFile" ]; then
+
+		# Add a single period before the filename
+		# so that the script to kill the wifi will
+		# not get run.
+		mv $wiDir$wiFile $wiDir.$wiFile
+	fi
+
+	# Alternative
+	#wiPlug="/etc/default/ifplugd"
+	#wifiSet=$(grep "\"all\"" $wiPlug | grep -v \#)
+
+	# If we find that the "all" setting is there, we then
+	# change the setting to just look to eth0 and wlan
+	#if [[ ! -z $wifiSet ]]; then
+	#	sed -i "s/^HOTPLUG_INTERFACES=.*/HOTPLUG_INTERFACES=\"eth0 wlan0\"" $wiPlug
+	#fi
 fi
 
 # /etc/ppp/options.ModemName
@@ -236,21 +288,24 @@ echo "ms-dns $gateway" >> $optFile
 papFile="$pppDirectory/pap-secrets"
 echo "Checking $papFile for Dreamcast dialup login"
 papSecrets=$(cat $papFile | grep $DCuser)
+papLogin="$DCuser	*	$DCpass	*"
+
 
 if [[ -z $papSecrets ]]; then
 	echo "Adding login user to $papFile"
-	echo "$DCuser	*	$DCpass	*" >> $papFile
+	echo "$papLogin" >> $papFile
 else
-	echo "The file $papFile is already set up."
+	echo "Updating login user in $papFile"
+	sed -i "s/^$papSecrets/$papLogin/" $papFile
 fi
 
 # /etc/ppp/peers/$DCuser
 # user settings
 # The "name" field needs to be the account
-# trying to be connected to. But the peer
+# trying to be connected to. But the
 # filename can be any name. Just needs to
 # be called with "pon FILENAME". For
-# simplicity they are the same name.
+# simplicity the filename is the username.
 peerFile="$pppDirectory/peers/$DCuser"
 echo "Writing $peerFile"
 echo "$MODEM" > $peerFile
@@ -266,6 +321,9 @@ echo "Checking for account: $DCuser"
 if getent passwd $DCuser > /dev/null 2>&1; then
 	# User exists
 	echo "$DCuser user account found."
+	echo "Making sure password is right."
+	# Not sure this is working...
+	echo "$DCuser:$DCpass" | chpasswd
 else
 	# User does not exist
 	echo "Creating $DCuser user account."
@@ -279,6 +337,15 @@ fi
 # If we're running the web server
 # set up host information
 if [[ -z $overWeb ]]; then
+
+	echo "Checking for Updated Websites"
+
+	# Run the script to check if any website files exist in
+	# the specific directory and update the apache directories
+	exec sudo ./load-websites.sh &
+
+	# Wait for the website update to finish executing
+	wait $!
 
 	# Set up Hosts file for Apache Server
 	hostsFile="/etc/hosts"
