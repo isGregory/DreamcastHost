@@ -17,7 +17,7 @@
 # Date Modified: 2015-4-4
 #
 # Code for communication with the modem was
-# based on information posted by pabouk on
+# based on information posted by pabouk on:
 # www.askubuntu.com/questions/323352
 
 # Variable to keep track of
