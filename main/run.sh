@@ -5,12 +5,12 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-16
-# Date Modified: 2014-9-15
+# Date Modified: 2015-3-29
 
 echo "Setting up scripts"
 
 # Set up default Override file.
-Override="Override"
+Override="Override.txt"
 
 # Establish Dreamcast User Name
 DCuser="dream"
@@ -43,40 +43,82 @@ if [[ -z $overWeb ]]; then
 
 	# Check dnsmasq is installed (for webserver hosting)
 	checkDNS=$(dpkg-query -W -f='${Status}' dnsmasq)
+
+	# Check php5-common is installed (for webserver hosting)
+	checkPHP=$(dpkg-query -W -f='${Status}' php5-common)
+
+	# Check lib-apache2-mod-php5 is installed (for webserver hosting)
+	checkAP=$(dpkg-query -W -f='${Status}' libapache2-mod-php5)
+
+	# Check php5-cli is installed (for webserver hosting)
+	checkPHPcli=$(dpkg-query -W -f='${Status}' php5-cli)
+
+	# Check php5-gd is installed (for images on the webserver)
+	checkGD=$(dpkg-query -W -f='${Status}' php5-gd)
 else
-	checkApache="Skip"
-	checkDNS="Skip"
+	checkApache=false
+	checkDNS=false
 fi
 
 # If one of the software is not installed
 # we update repositories
-if [[ -z $checkPPP ]] || [[ -z $checkWVDial ]] ||
-	[[ -z $checkApache ]] || [[ -z $checkDNS ]]; then
+if [[ ! $checkPPP    == *"install ok"* ]] ||
+   [[ ! $checkWVDial == *"install ok"* ]] ||
+   [[ ! $checkApache == *"install ok"* ]] ||
+   [[ ! $checkPHP    == *"install ok"* ]] ||
+   [[ ! $checkAP     == *"install ok"* ]] ||
+   [[ ! $checkPHPcli == *"install ok"* ]] ||
+   [[ ! $checkGD     == *"install ok"* ]] ||
+   [[ ! $checkDNS    == *"install ok"* ]]; then
 	echo "Preparing to Download Software"
 	echo "Updating Repositories"
 	sudo apt-get update
 fi
 
 # Install ppp if it's not already
-if [[ -z $checkPPP ]]; then
+if [[ ! $checkPPP == *"install ok"* ]]; then
 	echo "Installing PPP"
 	sudo apt-get install ppp
 fi
 
 # Install wvdial if it's not already
-if [[ -z $checkWVDial ]]; then
+if [[ ! $checkWVDial == *"install ok"* ]]; then
 	echo "Installing WVDial"
 	sudo apt-get install wvdial
 fi
 
 # Install apache2 if it's not already
-if [[ -z $checkApache ]]; then
+if [[ ! $checkApache == *"install ok"* ]]; then
 	echo "Installing Apache"
 	sudo apt-get install apache2
 fi
 
+# Install php5-common if it's not already
+if [[ ! $checkPHP == *"install ok"* ]]; then
+	echo "Installing PHP5"
+	sudo apt-get install php5-common
+fi
+
+# Install php5-common if it's not already
+if [[ ! $checkAP == *"install ok"* ]]; then
+	echo "Installing Apache PHP Library"
+	sudo apt-get install libapache2-mod-php5
+fi
+
+# Install php5-common if it's not already
+if [[ ! $checkPHPcli == *"install ok"* ]]; then
+	echo "Installing PHP5-cli"
+	sudo apt-get install php5-cli
+fi
+
+# Install php5-common if it's not already
+if [[ ! $checkGD == *"install ok"* ]]; then
+	echo "Installing PHP5-GD (For Images)"
+	sudo apt-get install php5-gd
+fi
+
 # Install dnsmasq if it's not already
-if [[ -z $checkDNS ]]; then
+if [[ ! $checkDNS == *"install ok"* ]]; then
 	echo "Installing dnsmasq"
 	sudo apt-get install dnsmasq
 fi
@@ -117,6 +159,7 @@ overFile=$(grep "No Files" $Override | grep -v \#)
 
 # If we are writing files
 if [[ -z $overFile ]]; then
+
 	echo "Saving Settings Files"
 
 	# Run the script to check for the necessary hardware
