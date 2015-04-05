@@ -17,7 +17,7 @@
 # Date Created: 2015-3-28
 # Date Modified: 2015-4-4
 
-# Set up variables
+# Set up variables:
 
 # WEB is the target directory for apache websites.
 WEB="test_target/"
