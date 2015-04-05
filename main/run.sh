@@ -1,7 +1,6 @@
 #!/bin/bash
 # Collect settings and send them to sub scripts
 #
-#
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-16
