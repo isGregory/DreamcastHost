@@ -25,7 +25,7 @@
 
 # Override Modem Device Name
 # Here you can place the name of the modem you want to use rather than have
-# the program detect the modem.
+# the program try to detect the modem.
 #
 # Example:
 # Modem: ttyACM0
@@ -35,6 +35,8 @@ Modem:
 
 # Override Dreamcast IP
 # Here you can specify an IP address you want the Dreamcast to use.
+# If no address specified the script will try to detect an address
+# that is currently not in use.
 #
 # Example:
 # Dreamcast IP: 192.168.1.53
@@ -46,9 +48,13 @@ Dreamcast IP:
 # Here you can specify the DNS server address you want the Dreamcast to
 # connect to.
 #
-# The program will attempt to install software that uses itself as the
-# DNS server and then connects out from there to the DNS server the DC-PC
-# server is using.
+# Priority for DNS settings are:
+#	1) The "Set DNS" override trumps all if found.
+#	2) As long as "DNSmasq off" is NOT used then
+#		the local IP address will be used to
+#		communicate with the dnsmasq program.
+#	3) If "DNSmasq off" is used then the DNS used
+#		by the local machine will be used.
 #
 # Note: Entries can be either an IP address or Domain
 #
@@ -56,7 +62,7 @@ Dreamcast IP:
 # Local Router
 # Set DNS: 192.168.1.1
 #
-# Dreamcast-Talk (Example; this won't actually work)
+# Dreamcast-Talk (Example; address incorrect)
 # Set DNS: dctalk.no-ip.info
 #
 # Sylverant PSO Server
@@ -90,12 +96,31 @@ Dreamcast IP:
 
 
 # Override Output Settings
-# This program will filter out certain things to keep the output cleaner.
-# Here you can specify printing out stuff that is otherwise filtered.
-# Note: Currently doesn't make much of a difference.
+# When the program runs with "Show All" it will also display the commands
+# being sent and received from the modem in addition to the standard
+# messages of this system. Regardless of this setting, all messages
+# will be saved to the local log file.
 #
 # Usage:
 # Show All
+
+
+# Override Slowdown
+# Certain modems are slow to respond upon receiving requests. With this
+# setting, the script will take more time to wait after sending a message
+# before it tries to communicate with the modem again.
+#
+# Usage:
+# Slow
+
+
+# Override Raspberry Pi
+# There are a few quirks that are more specific to the Raspberry Pi.
+# Putting this command will set the script to handle those issues.
+#
+# Usage:
+# Raspberry Pi
+Raspberry Pi 
 
 
 
@@ -156,7 +181,7 @@ Group:		GamePSO		192.168.1.29
 #
 # Domain -	The domain will be directed to the specified domain by
 # looking up the target domain's IP address.
-# Example:
+# Example (redirect sega to google):
 # Redirect:	www.sega.com	www.google.com
 #
 # Group -	The domain will be directed to the IP address of the Group
@@ -167,8 +192,9 @@ Group:		GamePSO		192.168.1.29
 # Example:
 # Redirect:	pso.dream-key.com	GamePSO
 #
-# Note: Be aware issues may arrise if Redirect and Domain have the same sites
-# and differ only with sub domains.
+# Note: Be aware issues may arise if "Redirect" and "Domain" have the
+# same sites and differ only with sub domains. In that case the
+# "Redirect" will take precedence
 #
 # Phantasy Star Online Uses:
 # Redirect:	game01.st-pso.games.sega.net
@@ -186,7 +212,7 @@ Group:		GamePSO		192.168.1.29
 # Redirect:	master5.4x4evolution.com
 #
 # Quake 3 Arena Uses:
-# Redirect:	master.quake3arena.com
+# Redirect:	master.quake3arena.com  	GameQ3
 
 Redirect:	game01.st-pso.games.sega.net	GamePSO
 Redirect:	pso01.dricas.ne.jp		GamePSO
