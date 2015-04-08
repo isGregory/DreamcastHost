@@ -20,12 +20,10 @@
 # Set up variables:
 
 # WEB is the target directory for apache websites.
-WEB="test_target/"
-#"/var/www/"
+WEB="/var/www/"
 
 # SET is the target directory for apache settings files.
-SET="target_test/"
-#"/etc/apache2/sites-available/"
+SET="/etc/apache2/sites-available/"
 
 # DIR is the location this script looks for websites to add.
 DIR="add-site"
@@ -57,9 +55,10 @@ handleSettings() {
     site=$2
 
     # Replace settings name with the correct site
-    sed -i 's/SITE_NAME/$site/g' $dir$OPT
+    sed -i "s/SITE_NAME/$site/g" $dir$FINDSET
 
     # Move apache2 settings file
+    # ToDo - Check if this fails, if so, don't remove source
     cp $dir$FINDSET $SET$site
 
     # Tell apache to enable the site
@@ -88,12 +87,13 @@ handleWebsite() {
     fi
 
     # Move website folder
+    # ToDo - Check if this fails, if so, don't remove source
     cp -r $d$FINDWEB $WEB$site
 
     # Set file permissions
     while read -r line; do
-        echo "Making $WEB$site/$line writable"
-        chmod 777 $WEB$site/$line
+        echo "Making $WEB$site/$FINDWEB/$line writable"
+        chmod 777 $WEB$site/$FINDWEB/$line
 
     done < <(grep "Writable" $d$OPT | grep -v \# |
         awk '{print $2}')
@@ -102,10 +102,14 @@ handleWebsite() {
 # Check to see if any websites are to be uploaded
 if [ "$(ls -A $DIR)" ]; then
 
-    echo "New website detected in $DIR"
-
     # Go through each folder in the target directory
     for d in $DIR/*/ ; do
+
+        if [ ! -d "$d" ]; then
+            continue;
+        fi
+
+        echo "New website detected: $d"
 
         # Go through and check that all three of the required
         # files and folders exist in the sub folder.
