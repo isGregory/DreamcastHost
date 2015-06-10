@@ -49,8 +49,10 @@ lookupDomain() {
 		awk '{print $2}'
 }
 
+#########################
+# Set default variables #
+#########################
 
-# Set default variables
 # Override File
 Override="Override.txt"
 
@@ -62,7 +64,10 @@ DCuser="dream"
 
 echo "Settings Recieved: $1 | $2 | $3"
 
-# Check if arguments have been passed in
+##########################################
+# Check if arguments have been passed in #
+##########################################
+
 # Check for first argument (Override)
 if [[ ! -z $1 ]]; then
 	Override=$1
@@ -93,7 +98,6 @@ fi
 
 # Current Date and Time
 DATE=$(date +"%Y-%m-%d  %I:%M %p %Z")
-#:%H:%M:%S`
 
 # Set Communication Speed
 SPEED=115200
@@ -102,7 +106,9 @@ SPEED=115200
 # get the apache web server.
 overWeb=$(grep "Webserver Off" $Override | grep -v \#)
 
-# Set up the configuration file for the modem
+###############################################
+# Set up the configuration file for the modem #
+###############################################
 
 # Get local IP Address
 myLANip=$(hostname -I)
@@ -117,6 +123,9 @@ else
 	echo "Local IP Address: $myLANip"
 fi
 
+# Grab everything from the IP address up to the last period.
+# If the IP address is "192.168.1.13",
+# the ipGroup becomes  "192.168.1"
 ipGroup=${myLANip%.*}
 echo "Searching for open IP on: $ipGroup.*"
 ipCheck="127.0.0.1"
@@ -130,11 +139,12 @@ overDCIP=$(grep "Dreamcast IP" $Override | grep -v \# |
 if [[ -z $overDCIP ]]; then
 
 	# IP addresses to scan through
-	#HOST_LOW=25
+	# Scan ten higher than my current IP.
 	HOST_LOW=$(echo $myLANip | cut -d "." -f 4)
 	HOST_LOW=$(($HOST_LOW + 10))
 	HOST_HIGH=200
 
+	# Scan for an unused IP address.
 	for ((i=$HOST_LOW;i<$HOST_HIGH;i++)); do
 		ipCheck=$ipGroup.$i
 		if [[ $ipCheck == $myLANip ]]; then
@@ -176,7 +186,7 @@ else
 	echo "Netmask: $netmask"
 fi
 
-# Check Overrride file for "Set DNS"
+# Check Overrride file for specified DNS to use
 overDNS=$(grep "Set DNS" $Override | grep -v \# | awk '{print $3}')
 
 # Check that the group listed a valid IP
@@ -187,7 +197,7 @@ if [[ -z $cIP ]]; then
 	overDNS=$(lookupDomain $overDNS)
 fi
 
-# No Override Specified for Dreamcast IP Address
+# No Override Specified for DNS IP Address
 if [[ ! -z $overDNS ]]; then
 	echo "Override for DNS Gateway Found: $overDNS"
 	gateway=$overDNS
@@ -236,27 +246,21 @@ if [[ -z $overPi ]]; then
 		# not get run.
 		mv $wiDir$wiFile $wiDir.$wiFile
 	fi
-
-	# Alternative
-	#wiPlug="/etc/default/ifplugd"
-	#wifiSet=$(grep "\"all\"" $wiPlug | grep -v \#)
-
-	# If we find that the "all" setting is there, we then
-	# change the setting to just look to eth0 and wlan
-	#if [[ ! -z $wifiSet ]]; then
-	#	sed -i "s/^HOTPLUG_INTERFACES=.*/HOTPLUG_INTERFACES=\"eth0 wlan0\"" $wiPlug
-	#fi
 fi
 
-# /etc/ppp/options.ModemName
-# Save Modem Options File
+##############################
+# /etc/ppp/options.ModemName #
+# Save Modem Options File    #
+##############################
 modemFile="$pppDirectory/options.$MODEM"
 echo "Writing $modemFile"
 echo "$myLANip:$ipDreamcast" > $modemFile
 echo "netmask $netmask" >> $modemFile
 
-# /etc/ppp/options
-# Save General Options File
+#############################
+# /etc/ppp/options          #
+# Save General Options File #
+#############################
 optFile="$pppDirectory/options"
 echo "Writing $optFile"
 echo "#" > $optFile
@@ -286,8 +290,10 @@ echo "# DNS Server Address" >> $optFile
 echo "# If we have dnsmasq, this is the local IP address" >> $optFile
 echo "ms-dns $gateway" >> $optFile
 
-# /etc/ppp/pap-secrets
-# pap-secrets setup
+########################
+# /etc/ppp/pap-secrets #
+# pap-secrets setup    #
+########################
 papFile="$pppDirectory/pap-secrets"
 echo "Checking $papFile for Dreamcast dialup login"
 papSecrets=$(cat $papFile | grep $DCuser)
@@ -302,8 +308,10 @@ else
 	sed -i "s/^$papSecrets/$papLogin/" $papFile
 fi
 
-# /etc/ppp/peers/$DCuser
-# user settings
+############################################
+# /etc/ppp/peers/$DCuser                   #
+# user settings                            #
+############################################
 # The "name" field needs to be the account
 # trying to be connected to. But the
 # filename can be any name. Just needs to
