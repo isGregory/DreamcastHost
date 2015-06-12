@@ -4,9 +4,42 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-16
-# Date Modified: 2015-3-29
+# Date Modified: 2015-6-11
+
+# This function takes in a file address argument,
+# checks if the file is exacutable and if not
+# attempts to make it so.
+# On Failure: Function causes script to exit.
+makeExecutable() {
+	toCheck=$*
+
+	if [ ! -x $toCheck ]; then
+		echo -n "Making $toCheck executable... "
+		sudo chmod 755 $toCheck
+		if [ ! -x $toCheck ]; then
+			echo "FAILED"
+			exit
+		else
+			echo "OK"
+		fi
+	fi
+}
 
 echo "Setting up scripts"
+
+# Define necessary scripts.
+scriptSoftware="./check-software.sh"
+scriptSettings="./modem-settings.sh"
+scriptListener="./modem-listener.sh"
+# Note: the load-websites.sh script is
+# hard-coded in "modem-settings.sh"
+scriptWebsites="./load-websites.sh"
+
+# Make sure necessary scripts are executable.
+makeExecutable $scriptSoftware
+makeExecutable $scriptSettings
+makeExecutable $scriptListener
+makeExecutable $scriptWebsites
 
 # Set up default Override file.
 Override="Override.txt"
@@ -22,104 +55,14 @@ if [[ ! -z $overUser ]]; then
 fi
 
 echo "Checking for necessary software"
+exec sudo $scriptSoftware $Override &
 
-# Check the necessary packages are installed:
-# Check ppp is installed (for the server)
-checkPPP=$(dpkg-query -W -f='${Status}' ppp)
+# Wait for the software check to finish executing
+wait $!
 
-# Check wvdial is installed (for modem scanning)
-checkWVDial=$(dpkg-query -W -f='${Status}' wvdial)
-
-# Check if the user has stated they don't want to
-# get the apache web server.
-overWeb=$(grep "Webserver Off" $Override | grep -v \#)
-
-# If they don't state "Webserver Off" we download
-# apache and dnsmasq, otherwise we skip them.
-if [[ -z $overWeb ]]; then
-	# Check apache2 is installed (for webserver hosting)
-	checkApache=$(dpkg-query -W -f='${Status}' apache2)
-
-	# Check dnsmasq is installed (for webserver hosting)
-	checkDNS=$(dpkg-query -W -f='${Status}' dnsmasq)
-
-	# Check php5-common is installed (for webserver hosting)
-	checkPHP=$(dpkg-query -W -f='${Status}' php5-common)
-
-	# Check lib-apache2-mod-php5 is installed (for webserver hosting)
-	checkAP=$(dpkg-query -W -f='${Status}' libapache2-mod-php5)
-
-	# Check php5-cli is installed (for webserver hosting)
-	checkPHPcli=$(dpkg-query -W -f='${Status}' php5-cli)
-
-	# Check php5-gd is installed (for images on the webserver)
-	checkGD=$(dpkg-query -W -f='${Status}' php5-gd)
-else
-	checkApache=false
-	checkDNS=false
-fi
-
-# If one of the software is not installed
-# we update repositories
-if [[ ! $checkPPP    == *"install ok"* ]] ||
-   [[ ! $checkWVDial == *"install ok"* ]] ||
-   [[ ! $checkApache == *"install ok"* ]] ||
-   [[ ! $checkPHP    == *"install ok"* ]] ||
-   [[ ! $checkAP     == *"install ok"* ]] ||
-   [[ ! $checkPHPcli == *"install ok"* ]] ||
-   [[ ! $checkGD     == *"install ok"* ]] ||
-   [[ ! $checkDNS    == *"install ok"* ]]; then
-	echo "Preparing to Download Software"
-	echo "Updating Repositories"
-	sudo apt-get update
-fi
-
-# Install ppp if it's not already
-if [[ ! $checkPPP == *"install ok"* ]]; then
-	echo "Installing PPP"
-	sudo apt-get install ppp
-fi
-
-# Install wvdial if it's not already
-if [[ ! $checkWVDial == *"install ok"* ]]; then
-	echo "Installing WVDial"
-	sudo apt-get install wvdial
-fi
-
-# Install apache2 if it's not already
-if [[ ! $checkApache == *"install ok"* ]]; then
-	echo "Installing Apache"
-	sudo apt-get install apache2
-fi
-
-# Install php5-common if it's not already
-if [[ ! $checkPHP == *"install ok"* ]]; then
-	echo "Installing PHP5"
-	sudo apt-get install php5-common
-fi
-
-# Install php5-common if it's not already
-if [[ ! $checkAP == *"install ok"* ]]; then
-	echo "Installing Apache PHP Library"
-	sudo apt-get install libapache2-mod-php5
-fi
-
-# Install php5-common if it's not already
-if [[ ! $checkPHPcli == *"install ok"* ]]; then
-	echo "Installing PHP5-cli"
-	sudo apt-get install php5-cli
-fi
-
-# Install php5-common if it's not already
-if [[ ! $checkGD == *"install ok"* ]]; then
-	echo "Installing PHP5-GD (For Images)"
-	sudo apt-get install php5-gd
-fi
-
-# Install dnsmasq if it's not already
-if [[ ! $checkDNS == *"install ok"* ]]; then
-	echo "Installing dnsmasq"
-	sudo apt-get install dnsmasq
+# If we don't have the necessary software we quit out.
+if [[ $? == 1 ]]; then
+	exit
 fi
 
 echo "Checking for Modem"
@@ -163,7 +106,7 @@ if [[ -z $overFile ]]; then
 
 	# Run the script to check for the necessary hardware
 	# detect the network settings and create settings files
-	exec sudo ./modem-settings.sh $Override $MODEM $DCuser &
+	exec sudo $scriptSettings $Override $MODEM $DCuser &
 
 	# Wait for the settings to finish executing
 	wait $!
@@ -176,7 +119,7 @@ fi
 # then start the listener
 if [[ $? == 0 ]]; then
 	echo "Starting Listener"
-	exec sudo ./modem-listener.sh $Override $MODEM $DCuser &
+	exec sudo $scriptListener $Override $MODEM $DCuser &
 	wait $!
 	echo "Program complete."
 fi

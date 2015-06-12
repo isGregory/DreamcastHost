@@ -14,7 +14,7 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-6
-# Date Modified: 2015-4-4
+# Date Modified: 2015-6-11
 #
 # Code for communication with the modem was
 # based on information posted by pabouk on:
@@ -54,7 +54,7 @@ MODEM="/dev/ttyACM0"
 # User to log in as
 DCuser="dream"
 
-echo "Recieved: $1 | $2 | $3"
+echo "Modem Listener - Recieved: $1 | $2 | $3"
 
 # Check if arguments have been passed in
 # Check for first argument (Override)

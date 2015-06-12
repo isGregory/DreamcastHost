@@ -14,7 +14,7 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-6
-# Date Modified: 2015-3-29
+# Date Modified: 2015-6-11
 #
 # References:
 # www.dreamcast-scene.com/guides/pc-dc-server-guide-win7
@@ -29,7 +29,11 @@
 # IP Check Information/Examples:
 # www.unix.com/shell-programing-and-scripting/36005-regular-expression-mac-address-validation.html
 
-# Helper Functions:
+
+####################
+# Helper Functions #
+####################
+
 # Fuction to check that an IP address is valid.
 checkIP() {
 	echo $* | awk -F"\." ' $0 - /^([0-9]{1,3}\.){3}[0-9]{1,3}$/ && $1 <= 255 && $2 <= 255 && $3 <= 255 && $4 <= 255 '
@@ -62,7 +66,7 @@ MODEM="/dev/ttyACM0"
 # User to log in as
 DCuser="dream"
 
-echo "Settings Recieved: $1 | $2 | $3"
+echo "Modem Settings - Recieved: $1 | $2 | $3"
 
 ##########################################
 # Check if arguments have been passed in #
