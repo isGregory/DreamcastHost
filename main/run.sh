@@ -4,7 +4,7 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-16
-# Date Modified: 2015-6-11
+# Date Modified: 2015-6-12
 
 # This function takes in a file address argument,
 # checks if the file is exacutable and if not
@@ -15,7 +15,7 @@ makeExecutable() {
 
 	if [ ! -x $toCheck ]; then
 		echo -n "Making $toCheck executable... "
-		sudo chmod 755 $toCheck
+		sudo chmod +x $toCheck
 		if [ ! -x $toCheck ]; then
 			echo "FAILED"
 			exit
@@ -54,7 +54,7 @@ if [[ ! -z $overUser ]]; then
 	DCuser=$overUser
 fi
 
-echo "Checking for necessary software"
+echo -n "Checking for necessary software... "
 exec sudo $scriptSoftware $Override &
 
 # Wait for the software check to finish executing
@@ -64,8 +64,10 @@ wait $!
 if [[ $? == 1 ]]; then
 	exit
 fi
+echo "OK"
 
-echo "Checking for Modem"
+echo "====== Loading Local Info ======="
+echo -n "Checking:         Modem... "
 
 # Check Overrride file for "Modem"
 overModem=$(grep "Modem" $Override | grep -v \# | awk '{print $2}')
@@ -74,26 +76,34 @@ overModem=$(grep "Modem" $Override | grep -v \# | awk '{print $2}')
 if [[ -z $overModem ]]; then
 	# Scan for a modem and get the name of a connected device.
 	#
-	# Arguments       - Breakdown
+	# Argument        - Reason
 	#
 	# wvdialconf      - scan for connected modems
 	# tr " " "\n"     - 'tr' to replace all spaces with new lines
 	# grep "/dev/"    - 'grep' to find a mention of a device
 	# cut -d "/" -f 3 - 'cut' out '/dev/' to get just the device's name
 	# cut -d "." -f 1 - 'cut' out the trailing period of that line
-	MODEM=$(wvdialconf | tr " " "\n" | grep "/dev/" |
+	MODEM=$(wvdialconf 2> /dev/null | tr " " "\n" | grep "/dev/" |
 		cut -d "/" -f 3 | cut -d "." -f 1 )
 else
-	echo "Override for Modem Device Found: $overModem"
+	echo -n "Override Found... "
 	MODEM=$overModem
+	# Check to make sure the specified
+	# modem is currently attached.
+	if [ ! -c "/dev/$MODEM" ]; then
+		echo "Failed"
+		echo "Override specified modem not found."
+		exit
+	fi
 fi
 
 # Check that a modem was found.
 if [[ -z $MODEM ]]; then
-	echo "Error: No Modem Detected."
+	echo "Failed"
+	echo "No Modem Detected."
 	exit
 else
-	echo "Found Modem: $MODEM"
+	echo "Found '$MODEM'"
 fi
 
 # Check if the setting turned off writing files
@@ -101,8 +111,6 @@ overFile=$(grep "No Files" $Override | grep -v \#)
 
 # If we are writing files
 if [[ -z $overFile ]]; then
-
-	echo "Saving Settings Files"
 
 	# Run the script to check for the necessary hardware
 	# detect the network settings and create settings files

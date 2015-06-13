@@ -14,7 +14,7 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-6
-# Date Modified: 2015-6-11
+# Date Modified: 2015-6-12
 #
 # Code for communication with the modem was
 # based on information posted by pabouk on:
@@ -54,7 +54,8 @@ MODEM="/dev/ttyACM0"
 # User to log in as
 DCuser="dream"
 
-echo "Modem Listener - Recieved: $1 | $2 | $3"
+# Debug:
+# echo "Modem Listener - Recieved: $1 | $2 | $3"
 
 # Check if arguments have been passed in
 # Check for first argument (Override)
@@ -433,6 +434,7 @@ answer() {
 trap 'log "===== LOGGER STOPPED: $BASHPID ====="' EXIT
 
 log       "===== LOGGER STARTED: $BASHPID ====="
+log "* Note:    Find the log file at $LOGFILE"
 
 # Run the "setup" command.
 setup

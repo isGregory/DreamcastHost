@@ -14,7 +14,7 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2014-8-6
-# Date Modified: 2015-6-11
+# Date Modified: 2015-6-12
 #
 # References:
 # www.dreamcast-scene.com/guides/pc-dc-server-guide-win7
@@ -66,7 +66,8 @@ MODEM="/dev/ttyACM0"
 # User to log in as
 DCuser="dream"
 
-echo "Modem Settings - Recieved: $1 | $2 | $3"
+# Debug:
+# echo "Modem Settings - Recieved: $1 | $2 | $3"
 
 ##########################################
 # Check if arguments have been passed in #
@@ -124,16 +125,22 @@ if [[ -z $myLANip ]]; then
 	echo "Error: No Internet Detected."
 	exit 1
 else
-	echo "Local IP Address: $myLANip"
+	echo "Local IP:         $myLANip"
 fi
 
 # Grab everything from the IP address up to the last period.
 # If the IP address is "192.168.1.13",
 # the ipGroup becomes  "192.168.1"
 ipGroup=${myLANip%.*}
-echo "Searching for open IP on: $ipGroup.*"
+echo "Find open IP:     $ipGroup.*"
 ipCheck="127.0.0.1"
 ipDreamcast=""
+
+# Here we handle figuring out the IP address that
+# the Dreamcast will use. Either one is specified
+# in the Override file, or the script scans for
+# an open address in the same group as the
+# host computer.
 
 # Check Overrride file for "Dreamcast IP"
 overDCIP=$(grep "Dreamcast IP" $Override | grep -v \# |
@@ -154,17 +161,17 @@ if [[ -z $overDCIP ]]; then
 		if [[ $ipCheck == $myLANip ]]; then
 			continue
 		fi
-		echo -n "Checking $ipCheck..."
+		echo -n "Checking:         $ipCheck... "
 		checkAddress=$(ping -c 1 $ipCheck)
 		if [[ $checkAddress == *"0 received"* ]]; then
-			echo "IP Address for Dreamcast found!"
+			echo "open!"
 			ipDreamcast=$ipCheck
 			break
 		elif [[ -z $checkAddress ]]; then
 			echo "Error: No Network Detected."
 			break
 		else
-			echo "IP Address in use."
+			echo "in use."
 		fi
 	done
 
@@ -177,7 +184,7 @@ if [[ -z $ipDreamcast ]]; then
 	echo "Error: Could not find an open IP Address for the Dreamcast."
 	exit 1
 else
-	echo "Dreamcast IP: $ipDreamcast"
+	echo "Dreamcast IP:     $ipDreamcast"
 fi
 
 netmask=$(ifconfig | grep -w inet | grep -v 127.0.0.1 |
@@ -187,7 +194,7 @@ if [[ -z $netmask ]]; then
 	echo "Error: Could not find internet netmask."
 	exit 1
 else
-	echo "Netmask: $netmask"
+	echo "Netmask:          $netmask"
 fi
 
 # Check Overrride file for specified DNS to use
@@ -219,7 +226,7 @@ if [[ -z $gateway ]]; then
 	echo "Error: Could not find internet gateway (router)."
 	exit 1
 else
-	echo "Gateway: $gateway"
+	echo "Gateway:          $gateway"
 fi
 
 
@@ -237,13 +244,13 @@ overPi=$(grep "Raspberry Pi" $Override | grep -v \#)
 # Further information
 # http://www.raspberrypi.org/forums/viewtopic.php?f=91&t=19430
 if [[ -z $overPi ]]; then
-	echo "Making sure Raspberry Pi handles wifi"
 
 	wiDir="/etc/ifplugd/action.d/"
 	wiFile="action_wpa"
 
 	# If the file exists and hasn't been changed yet
 	if [ -f "$wiDir$wiFile" ]; then
+		echo "Making sure Raspberry Pi handles wifi"
 
 		# Add a single period before the filename
 		# so that the script to kill the wifi will
@@ -252,12 +259,14 @@ if [[ -z $overPi ]]; then
 	fi
 fi
 
+echo "===== Saving Settings Files ====="
+
 ##############################
 # /etc/ppp/options.ModemName #
 # Save Modem Options File    #
 ##############################
 modemFile="$pppDirectory/options.$MODEM"
-echo "Writing $modemFile"
+echo "Writing:  $modemFile"
 echo "$myLANip:$ipDreamcast" > $modemFile
 echo "netmask $netmask" >> $modemFile
 
@@ -266,7 +275,7 @@ echo "netmask $netmask" >> $modemFile
 # Save General Options File #
 #############################
 optFile="$pppDirectory/options"
-echo "Writing $optFile"
+echo "Writing:  $optFile"
 echo "#" > $optFile
 echo -e "# $optFile" >> $optFile
 echo "#" >> $optFile
@@ -299,17 +308,17 @@ echo "ms-dns $gateway" >> $optFile
 # pap-secrets setup    #
 ########################
 papFile="$pppDirectory/pap-secrets"
-echo "Checking $papFile for Dreamcast dialup login"
-papSecrets=$(cat $papFile | grep $DCuser)
+echo -n "Checking: $papFile for dialup login... "
+papSecrets=$( grep $DCuser $papFile | grep -v \# )
 papLogin="$DCuser	*	$DCpass	*"
 
 
 if [[ -z $papSecrets ]]; then
-	echo "Adding login user to $papFile"
 	echo "$papLogin" >> $papFile
+	echo "Added"
 else
-	echo "Updating login user in $papFile"
 	sed -i "s/^$papSecrets/$papLogin/" $papFile
+	echo "Updated"
 fi
 
 ############################################
@@ -322,7 +331,7 @@ fi
 # be called with "pon FILENAME". For
 # simplicity the filename is the username.
 peerFile="$pppDirectory/peers/$DCuser"
-echo "Writing $peerFile"
+echo "Writing:  $peerFile"
 echo "$MODEM" > $peerFile
 echo "$SPEED" >> $peerFile
 echo "name \"$DCuser\"" >> $peerFile
@@ -332,19 +341,18 @@ echo "noauth" >> $peerFile
 
 # Set up the computer to have an account
 # for the dreamcast to log into
-echo "Checking for account: $DCuser"
+echo -n "Checking: System account '$DCuser'... "
 if getent passwd $DCuser > /dev/null 2>&1; then
 	# User exists
-	echo "$DCuser user account found."
-	echo "Making sure password is right."
-	# Not sure this is working...
+	echo "OK"
+	# Make sure password is correct
 	echo "$DCuser:$DCpass" | chpasswd
 else
 	# User does not exist
-	echo "Creating $DCuser user account."
+	echo "NONE"
+	echo "Creating: System account for '$DCuser'"
 	useradd -G dialout,dip,users -c "Dreamcast user" -d /home/$DCuser -g users -s /usr/sbin/pppd $DCuser
-	echo "Setting $DCuser password."
-	# Not sure this is working...
+	# Set up account's password
 	echo "$DCuser:$DCpass" | chpasswd
 fi
 
@@ -353,7 +361,23 @@ fi
 # set up host information
 if [[ -z $overWeb ]]; then
 
-	echo "Checking for Updated Websites"
+	echo "===== Configure Web Server ======"
+
+	# Make sure the apache2 config file exists.
+	# If not we make a default one to avoid
+	# a couple harmless warnings.
+	apacheDefault="/etc/apache2/apache2.conf"
+	hasServerName=$( grep "ServerName" $apacheDefault | grep -v \# )
+	if [[ -z $hasServerName ]]; then
+		echo "Writing:  $apacheDefault"
+		echo -e >> $apacheDefault
+		echo -e >> $apacheDefault
+		echo "# Define ServerName to eliminate" >> $apacheDefault
+		echo "# a couple apache2 warnings." >> $apacheDefault
+		echo "ServerName localhost" >> $apacheDefault
+	fi
+
+	echo "Checking: For Updated Websites"
 
 	# Run the script to check if any website files exist in
 	# the specific directory and update the apache directories
@@ -382,7 +406,7 @@ if [[ -z $overWeb ]]; then
 		directTo=$overHost
 	fi
 
-	echo "Writing Domains to $hostsFile"
+	echo "Writing:  Domains to $hostsFile"
 	echo "### Start Dreamcast Hosts ###" >> $hostsFile
 
 	# We write the "Redirect" override commands before
@@ -446,13 +470,12 @@ if [[ -z $overWeb ]]; then
 
 	echo "#### End Dreamcast Hosts ####" >> $hostsFile
 
-	echo "Restarting apache"
-	sudo service apache2 restart
+	echo "Restarting: apache"
+	sudo service apache2 restart > /dev/null
 
-	echo "Restarting dnsmasq"
-	sudo /etc/init.d/dnsmasq restart
+	echo "Restarting: dnsmasq"
+	sudo /etc/init.d/dnsmasq restart > /dev/null
 
-	echo "Web server set up."
 fi
 
-echo "Updating Settings Complete"
+echo "Updating Settings - Complete"

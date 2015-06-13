@@ -16,7 +16,8 @@
 # Override File
 Override="Override.txt"
 
-echo "Check Software - Recieved: $1"
+# Debug:
+# echo "Check Software - Recieved: $1"
 
 # Check if arguments have been passed in
 # Check for first argument (Override)
