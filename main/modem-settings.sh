@@ -471,10 +471,12 @@ if [[ -z $overWeb ]]; then
 	echo "#### End Dreamcast Hosts ####" >> $hostsFile
 
 	echo "Restarting: apache"
-	sudo service apache2 restart > /dev/null
+	sudo service apache2 restart > /dev/null &
 
 	echo "Restarting: dnsmasq"
-	sudo /etc/init.d/dnsmasq restart > /dev/null
+	sudo /etc/init.d/dnsmasq restart > /dev/null &
+
+	wait
 
 fi
 
