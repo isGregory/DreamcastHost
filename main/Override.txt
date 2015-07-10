@@ -150,7 +150,7 @@ Domain: passport.shenmue.com
 
 
 
-# Set Website Host
+# Set Website Host / DNS
 # Here you can specify the IP address for all websites if you want to direct
 # to a different host than the local one.
 #
@@ -211,6 +211,10 @@ Group:		GamePSO		192.168.1.29
 # Redirect:	master3.4x4evolution.com
 # Redirect:	master4.4x4evolution.com
 # Redirect:	master5.4x4evolution.com
+#
+# Starlancer Uses:
+# Redirect:	master.gamespy.com
+# Redirect:	peerchat.gamespy.com
 #
 # Quake 3 Arena Uses:
 # Redirect:	master.quake3arena.com  	GameQ3

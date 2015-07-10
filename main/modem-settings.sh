@@ -392,7 +392,7 @@ if [[ -z $overWeb ]]; then
 	# Remove the previous dreamcast domains entry
 	sed -i '/Start Dream/,/End Dream/d' $hostsFile
 
-	# Set the default web host as the local machine
+	# Set the default web host / DNS as the local machine
 	directTo=$myLANip
 
 	# Check Override file for "Host"
