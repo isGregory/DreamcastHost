@@ -126,7 +126,7 @@ fi
 # If we set up the settings successfuly,
 # then start the listener
 if [[ $? == 0 ]]; then
-	echo "Starting Listener"
+	echo "======= Starting Listener ======="
 	exec sudo $scriptListener $Override $MODEM $DCuser &
 	wait $!
 	echo "Program complete."
