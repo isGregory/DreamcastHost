@@ -90,12 +90,20 @@ handleWebsite() {
 	# ToDo - Check if this fails, if so, don't remove source
 	cp -r $dir$FINDWEB $WEB$site
 
-	# Set file permissions
+	# Set writable file permissions
 	while read -r line; do
 		echo "Making $WEB$site/$FINDWEB/$line writable"
 		chmod 777 $WEB$site/$FINDWEB/$line
 
 	done < <(grep "Writable" $dir$OPT | grep -v \# |
+		awk '{print $2}')
+
+	# Set executable file permissions
+	while read -r line; do
+		echo "Making $WEB$site/$FINDWEB/$line Executable"
+		chmod 555 $WEB$site/$FINDWEB/$line
+
+	done < <(grep "Executable" $dir$OPT | grep -v \# |
 		awk '{print $2}')
 }
 
