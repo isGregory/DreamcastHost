@@ -93,9 +93,10 @@ checkInstalled() {
 
 	# If one of the software is not installed
 	# we update repositories
-	if  [[ $needPPP ]] || [[ $needWVDial ]] || [[ $needApache ]] ||
-		[[ $needPHP ]] || [[ $needAP     ]] || [[ $needPHPcli ]] ||
-		[[ $needGD  ]] || [[ $needDNS    ]]; then
+	if  [[ 1 == $needPPP ]] || [[ 1 == $needWVDial ]] ||
+		[[ 1 == $needPHP ]] || [[ 1 == $needApache ]] ||
+		[[ 1 == $needAP  ]] || [[ 1 == $needPHPcli ]] ||
+		[[ 1 == $needGD  ]] || [[ 1 == $needDNS    ]]; then
 		return 0
 	fi
 	return 1
@@ -107,31 +108,31 @@ checkInstalled
 # Set the return to a variable
 hasAllPrograms=$?
 
-if [[ ! $hasAllPrograms ]]; then
+if [[ 0 == $hasAllPrograms ]]; then
 	echo "Preparing to Download Software"
 	echo "Updating Repositories"
 	sudo apt-get update
 
 	# Install ppp if it's not already
-	if [[ $needPPP ]]; then
+	if [[ 1 == $needPPP ]]; then
 		echo "Installing PPP"
 		sudo apt-get install ppp
 	fi
 
 	# Install wvdial if it's not already
-	if [[ $needWVDial ]]; then
+	if [[ 1 == $needWVDial ]]; then
 		echo "Installing WVDial"
 		sudo apt-get install wvdial
 	fi
 
 	# Install apache2 if it's not already
-	if [[ $needApache ]]; then
+	if [[ 1 == $needApache ]]; then
 		echo "Installing Apache"
 		sudo apt-get install apache2
 	fi
 
 	# Install php5-common if it's not already
-	if [[ $needPHP ]]; then
+	if [[ 1 == $needPHP ]]; then
 		echo "Installing PHP5"
 		sudo apt-get install php5-common
 	fi
@@ -143,19 +144,19 @@ if [[ ! $hasAllPrograms ]]; then
 	fi
 
 	# Install php5-common if it's not already
-	if [[ $needPHPcli ]]; then
+	if [[ 1 == $needPHPcli ]]; then
 		echo "Installing PHP5-cli"
 		sudo apt-get install php5-cli
 	fi
 
 	# Install php5-common if it's not already
-	if [[ $needGD ]]; then
+	if [[ 1 == $needGD ]]; then
 		echo "Installing PHP5-GD (For Images)"
 		sudo apt-get install php5-gd
 	fi
 
 	# Install dnsmasq if it's not already
-	if [[ $needDNS ]]; then
+	if [[ 1 == $needDNS ]]; then
 		echo "Installing dnsmasq"
 		sudo apt-get install dnsmasq
 	fi
@@ -170,7 +171,7 @@ if [[ ! $hasAllPrograms ]]; then
 
 	# We are missing necessary software,
 	# so we quit with an error.
-	if [[ ! $hasAllPrograms ]]; then
+	if [[ 0 == $hasAllPrograms ]]; then
 		echo "Error: Missing necessary software."
 		exit 1
 	fi
