@@ -10,7 +10,7 @@
 # Author: Gregory Hoople
 #
 # Date Created: 2015-6-11
-# Date Modified: 2015-6-11
+# Date Modified: 2016-3-31
 
 # Set default variables
 # Override File
@@ -116,49 +116,49 @@ if [[ 0 == $hasAllPrograms ]]; then
 	# Install ppp if it's not already
 	if [[ 1 == $needPPP ]]; then
 		echo "Installing PPP"
-		sudo apt-get install ppp
+		sudo apt-get -y install ppp
 	fi
 
 	# Install wvdial if it's not already
 	if [[ 1 == $needWVDial ]]; then
 		echo "Installing WVDial"
-		sudo apt-get install wvdial
+		sudo apt-get -y install wvdial
 	fi
 
 	# Install apache2 if it's not already
 	if [[ 1 == $needApache ]]; then
 		echo "Installing Apache"
-		sudo apt-get install apache2
+		sudo apt-get -y install apache2
 	fi
 
 	# Install php5-common if it's not already
 	if [[ 1 == $needPHP ]]; then
 		echo "Installing PHP5"
-		sudo apt-get install php5-common
+		sudo apt-get -y install php5-common
 	fi
 
 	# Install php5-common if it's not already
 	if [[ $needAP ]]; then
 		echo "Installing Apache PHP Library"
-		sudo apt-get install libapache2-mod-php5
+		sudo apt-get -y install libapache2-mod-php5
 	fi
 
 	# Install php5-common if it's not already
 	if [[ 1 == $needPHPcli ]]; then
 		echo "Installing PHP5-cli"
-		sudo apt-get install php5-cli
+		sudo apt-get -y install php5-cli
 	fi
 
 	# Install php5-common if it's not already
 	if [[ 1 == $needGD ]]; then
 		echo "Installing PHP5-GD (For Images)"
-		sudo apt-get install php5-gd
+		sudo apt-get -y install php5-gd
 	fi
 
 	# Install dnsmasq if it's not already
 	if [[ 1 == $needDNS ]]; then
 		echo "Installing dnsmasq"
-		sudo apt-get install dnsmasq
+		sudo apt-get -y install dnsmasq
 	fi
 
 
