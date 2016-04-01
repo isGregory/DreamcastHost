@@ -54,15 +54,18 @@ handleSettings() {
 	# Define site name argument
 	site=$2
 
+	# Define Extension
+	end=".conf"
+
 	# Replace settings name with the correct site
 	sed -i "s/SITE_NAME/$site/g" $dir$FINDSET
 
 	# Move apache2 settings file
 	# ToDo - Check if this fails, if so, don't remove source
-	cp $dir$FINDSET $SET$site
+	cp $dir$FINDSET $SET$site$end
 
 	# Tell apache to enable the site
-	sudo a2ensite $site
+	sudo a2ensite $site$end
 
 }
 
